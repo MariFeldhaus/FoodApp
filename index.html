@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Was koche ich heute?</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --cream: #FAF7F2;
+    --warm-white: #FFFEF9;
+    --ink: #1A1814;
+    --muted: #8A8680;
+    --border: #E8E4DC;
+    --green: #2D6A4F;
+    --green-light: #EAF4EE;
+    --red-light: #FAEAEA;
+    --red: #C0392B;
+    --card-shadow: 0 2px 24px rgba(26,24,20,0.08);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--cream);
+    color: var(--ink);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  header {
+    width: 100%;
+    padding: 2rem 1.5rem 0;
+    text-align: center;
+  }
+
+  header h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(2rem, 6vw, 3rem);
+    font-weight: 400;
+    letter-spacing: -0.02em;
+    line-height: 1.15;
+  }
+
+  header h1 em {
+    font-style: italic;
+    color: var(--green);
+  }
+
+  header p {
+    margin-top: .5rem;
+    font-size: 14px;
+    color: var(--muted);
+    font-weight: 300;
+  }
+
+  #main {
+    width: 100%;
+    max-width: 440px;
+    padding: 2rem 1.25rem 3rem;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+  }
+
+  /* ---- Upload ---- */
+  #upload-section { display: flex; flex-direction: column; gap: 1rem; }
+
+  #drop-zone {
+    border: 1.5px dashed var(--border);
+    border-radius: 16px;
+    padding: 2.5rem 1rem;
+    text-align: center;
+    cursor: pointer;
+    transition: border-color .2s, background .2s;
+    background: var(--warm-white);
+    position: relative;
+    overflow: hidden;
+  }
+
+  #drop-zone:hover { border-color: var(--green); background: var(--green-light); }
+  #drop-zone input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+
+  #drop-zone .icon {
+    width: 48px; height: 48px;
+    margin: 0 auto .75rem;
+    border: 1.5px solid var(--border);
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    background: var(--cream);
+  }
+
+  #drop-zone h3 { font-size: 15px; font-weight: 500; margin-bottom: .25rem; }
+  #drop-zone p { font-size: 13px; color: var(--muted); font-weight: 300; }
+
+  #preview-wrap { display: none; position: relative; }
+
+  #preview-img {
+    width: 100%;
+    max-height: 240px;
+    object-fit: cover;
+    border-radius: 16px;
+    display: block;
+    border: 1px solid var(--border);
+  }
+
+  #change-btn {
+    position: absolute;
+    bottom: .75rem; right: .75rem;
+    font-size: 12px;
+    padding: 5px 12px;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    background: rgba(250,247,242,.9);
+    cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+    color: var(--ink);
+    backdrop-filter: blur(4px);
+  }
+
+  #analyze-btn {
+    width: 100%;
+    padding: .85rem;
+    font-size: 15px;
+    font-weight: 500;
+    font-family: 'DM Sans', sans-serif;
+    border: none;
+    border-radius: 12px;
+    background: var(--ink);
+    color: var(--warm-white);
+    cursor: pointer;
+    transition: opacity .2s, transform .1s;
+    display: none;
+    letter-spacing: .01em;
+  }
+  #analyze-btn:hover { opacity: .88; }
+  #analyze-btn:active { transform: scale(.98); }
+
+  #error-msg {
+    font-size: 13px;
+    color: var(--red);
+    text-align: center;
+    padding: .5rem;
+    display: none;
+    background: var(--red-light);
+    border-radius: 8px;
+  }
+
+  /* ---- Loading ---- */
+  #loading {
+    display: none;
+    text-align: center;
+    padding: 3rem 0;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .spinner {
+    width: 36px; height: 36px;
+    border: 2px solid var(--border);
+    border-top-color: var(--ink);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  #loading p { font-size: 14px; color: var(--muted); font-weight: 300; }
+
+  /* ---- Swipe area ---- */
+  #swipe-area { display: none; flex-direction: column; gap: .75rem; }
+
+  .swipe-hint {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    color: var(--muted);
+    padding: 0 .25rem;
+    font-weight: 300;
+  }
+
+  .card-stack {
+    position: relative;
+    height: 430px;
+  }
+
+  .recipe-card {
+    position: absolute;
+    inset: 0;
+    background: var(--warm-white);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 1.75rem;
+    cursor: grab;
+    user-select: none;
+    box-shadow: var(--card-shadow);
+    display: flex;
+    flex-direction: column;
+    gap: .75rem;
+    will-change: transform;
+  }
+  .recipe-card:active { cursor: grabbing; }
+  .recipe-card.behind-1 { transform: scale(.97) translateY(8px); z-index: 1; box-shadow: none; }
+  .recipe-card.behind-2 { transform: scale(.94) translateY(16px); z-index: 0; box-shadow: none; }
+  .recipe-card.front { z-index: 2; }
+  .recipe-card.fly-left  { transition: transform .38s ease, opacity .38s ease; transform: translateX(-130%) rotate(-16deg) !important; opacity: 0; pointer-events: none; }
+  .recipe-card.fly-right { transition: transform .38s ease, opacity .38s ease; transform: translateX(130%) rotate(16deg) !important; opacity: 0; pointer-events: none; }
+
+  .card-header { display: flex; justify-content: space-between; align-items: flex-start; gap: .5rem; }
+
+  .card-tag {
+    font-size: 11px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    padding: 4px 10px;
+    border-radius: 20px;
+    background: var(--green-light);
+    color: var(--green);
+    flex-shrink: 0;
+  }
+
+  .card-time {
+    font-size: 12px;
+    color: var(--muted);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    flex-shrink: 0;
+    font-weight: 300;
+  }
+
+  .card-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 22px;
+    font-weight: 600;
+    line-height: 1.25;
+    letter-spacing: -.01em;
+  }
+
+  .card-desc {
+    font-size: 13.5px;
+    line-height: 1.65;
+    color: #4A4744;
+    font-weight: 300;
+    flex: 1;
+  }
+
+  .ing-label {
+    font-size: 10px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: .1em;
+    color: var(--muted);
+  }
+
+  .ingredients { display: flex; flex-wrap: wrap; gap: 6px; }
+
+  .ing {
+    font-size: 12px;
+    padding: 3px 10px;
+    background: var(--cream);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    color: #5A5754;
+    font-weight: 300;
+  }
+
+  .swipe-indicator {
+    position: absolute;
+    top: 1.5rem;
+    font-size: 12px;
+    font-weight: 500;
+    padding: 4px 12px;
+    border-radius: 20px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .12s;
+    letter-spacing: .03em;
+  }
+  .ind-yes { left: 1.5rem; background: var(--green-light); color: var(--green); }
+  .ind-no  { right: 1.5rem; background: var(--red-light); color: var(--red); }
+
+  /* Action buttons */
+  .action-row {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 2rem;
+  }
+
+  .act-btn {
+    width: 60px; height: 60px;
+    border-radius: 50%;
+    border: 1px solid var(--border);
+    background: var(--warm-white);
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: background .15s, transform .1s, border-color .15s;
+    box-shadow: var(--card-shadow);
+  }
+  .act-btn:hover { background: var(--cream); border-color: var(--ink); }
+  .act-btn:active { transform: scale(.9); }
+
+  #counter {
+    text-align: center;
+    font-size: 12px;
+    color: var(--muted);
+    font-weight: 300;
+    letter-spacing: .05em;
+  }
+
+  /* ---- Done screen ---- */
+  #done-screen { display: none; flex-direction: column; gap: 1rem; }
+
+  #done-screen h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 26px;
+    font-weight: 400;
+  }
+  #done-screen h2 em { font-style: italic; color: var(--green); }
+
+  #done-screen p { font-size: 14px; color: var(--muted); font-weight: 300; }
+
+  .liked-card {
+    background: var(--warm-white);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1rem 1.25rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: .5rem;
+  }
+  .liked-card-title { font-size: 15px; font-weight: 500; }
+  .liked-card-meta { font-size: 12px; color: var(--muted); margin-top: 2px; font-weight: 300; }
+  .liked-time-badge {
+    font-size: 12px;
+    color: var(--muted);
+    flex-shrink: 0;
+    font-weight: 300;
+  }
+
+  #restart-btn {
+    padding: .75rem;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: transparent;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    color: var(--ink);
+    cursor: pointer;
+    transition: background .15s;
+    margin-top: .5rem;
+  }
+  #restart-btn:hover { background: var(--warm-white); }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Was koche ich <em>heute?</em></h1>
+  <p>Foto machen · Rezepte entdecken · Swipen</p>
+</header>
+
+<div id="main">
+
+  <!-- Upload -->
+  <div id="upload-section">
+    <div id="drop-zone">
+      <input type="file" id="file-input" accept="image/*">
+      <div class="icon">
+        <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+          <rect x="2" y="5" width="18" height="14" rx="2.5" stroke="#8A8680" stroke-width="1.3"/>
+          <circle cx="8" cy="11" r="2" stroke="#8A8680" stroke-width="1.3"/>
+          <path d="M2 16L7 11L10.5 14.5L14 11L20 16" stroke="#8A8680" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M16 2V6M14 4H18" stroke="#8A8680" stroke-width="1.3" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <h3>Zutaten fotografieren</h3>
+      <p>Kühlschrank, Einkauf oder Tisch — einfach tippen</p>
+    </div>
+
+    <div id="preview-wrap">
+      <img id="preview-img" alt="Vorschau">
+      <button id="change-btn" onclick="document.getElementById('file-input').click()">Bild ändern</button>
+    </div>
+
+    <div id="error-msg"></div>
+    <button id="analyze-btn" onclick="analyze()">Rezepte vorschlagen</button>
+  </div>
+
+  <!-- Loading -->
+  <div id="loading">
+    <div class="spinner"></div>
+    <p id="loading-text">Zutaten werden erkannt…</p>
+  </div>
+
+  <!-- Swipe -->
+  <div id="swipe-area">
+    <div class="swipe-hint">
+      <span>← überspringen</span>
+      <span>speichern →</span>
+    </div>
+    <div class="card-stack" id="card-stack"></div>
+    <div class="action-row">
+      <button class="act-btn" onclick="swipeCard('left')" title="Überspringen">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+          <path d="M5 5L15 15M15 5L5 15" stroke="#C0392B" stroke-width="1.6" stroke-linecap="round"/>
+        </svg>
+      </button>
+      <button class="act-btn" onclick="swipeCard('right')" title="Speichern">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+          <path d="M10 17C10 17 2.5 12 2.5 6.5C2.5 4.29 4.29 2.5 6.5 2.5C7.97 2.5 9.25 3.26 10 4.42C10.75 3.26 12.03 2.5 13.5 2.5C15.71 2.5 17.5 4.29 17.5 6.5C17.5 12 10 17 10 17Z" stroke="#2D6A4F" stroke-width="1.6" stroke-linejoin="round"/>
+        </svg>
+      </button>
+    </div>
+    <p id="counter"></p>
+  </div>
+
+  <!-- Done -->
+  <div id="done-screen">
+    <h2>Guten <em>Appetit!</em></h2>
+    <p id="done-subtitle"></p>
+    <div id="liked-list"></div>
+    <button id="restart-btn" onclick="restart()">Nochmal von vorne</button>
+  </div>
+
+</div>
+
+<script>
+let recipes = [], currentIdx = 0, liked = [];
+let imageBase64 = '', imageMime = 'image/jpeg';
+let isDragging = false, startX = 0, currentX = 0;
+
+const $ = id => document.getElementById(id);
+
+$('file-input').addEventListener('change', e => {
+  const file = e.target.files[0];
+  if (!file) return;
+  imageMime = file.type || 'image/jpeg';
+  const reader = new FileReader();
+  reader.onload = ev => {
+    imageBase64 = ev.target.result.split(',')[1];
+    $('preview-img').src = ev.target.result;
+    $('preview-wrap').style.display = 'block';
+    $('drop-zone').style.display = 'none';
+    $('analyze-btn').style.display = 'block';
+    $('error-msg').style.display = 'none';
+  };
+  reader.readAsDataURL(file);
+});
+
+const loadingSteps = [
+  'Zutaten werden erkannt…',
+  'Rezeptideen werden entwickelt…',
+  'Zubereitung wird geplant…'
+];
+
+async function analyze() {
+  if (!imageBase64) return;
+  $('upload-section').style.display = 'none';
+  $('loading').style.display = 'flex';
+
+  let step = 0;
+  const interval = setInterval(() => {
+    $('loading-text').textContent = loadingSteps[++step % loadingSteps.length];
+  }, 1800);
+
+  try {
+    const res = await fetch('/api/rezepte', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ image: imageBase64, mimeType: imageMime })
+    });
+
+    clearInterval(interval);
+    if (!res.ok) throw new Error('Server-Fehler: ' + res.status);
+
+    recipes = await res.json();
+    $('loading').style.display = 'none';
+    renderCards();
+    $('swipe-area').style.display = 'flex';
+    updateCounter();
+
+  } catch (err) {
+    clearInterval(interval);
+    $('loading').style.display = 'none';
+    $('upload-section').style.display = 'flex';
+    const em = $('error-msg');
+    em.textContent = 'Fehler: ' + (err.message || 'Bitte nochmal versuchen.');
+    em.style.display = 'block';
+  }
+}
+
+function renderCards() {
+  const stack = $('card-stack');
+  stack.innerHTML = '';
+  for (let i = Math.min(currentIdx + 2, recipes.length - 1); i >= currentIdx; i--) {
+    const card = makeCard(recipes[i], i);
+    const offset = i - currentIdx;
+    card.classList.add(offset === 0 ? 'front' : offset === 1 ? 'behind-1' : 'behind-2');
+    stack.appendChild(card);
+  }
+  attachDrag();
+}
+
+function makeCard(r, idx) {
+  const d = document.createElement('div');
+  d.className = 'recipe-card';
+  d.dataset.idx = idx;
+  d.innerHTML = `
+    <div class="swipe-indicator ind-yes" id="iy${idx}">Speichern</div>
+    <div class="swipe-indicator ind-no"  id="in${idx}">Weiter</div>
+    <div class="card-header">
+      <span class="card-tag">${r.category}</span>
+      <span class="card-time">
+        <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><circle cx="6" cy="6" r="5" stroke="#8A8680" stroke-width="1"/><path d="M6 3V6L8 7.5" stroke="#8A8680" stroke-width="1" stroke-linecap="round"/></svg>
+        ${r.time} Min.
+      </span>
+    </div>
+    <div class="card-title">${r.title}</div>
+    <div class="card-desc">${r.description}</div>
+    <div class="ing-label">Zutaten</div>
+    <div class="ingredients">${r.ingredients.map(i => `<span class="ing">${i}</span>`).join('')}</div>
+  `;
+  return d;
+}
+
+function attachDrag() {
+  const card = document.querySelector('.recipe-card.front');
+  if (!card) return;
+
+  const start = x => { isDragging = true; startX = x; currentX = 0; card.style.transition = 'none'; };
+  const move = x => {
+    if (!isDragging) return;
+    currentX = x - startX;
+    card.style.transform = `translateX(${currentX}px) rotate(${currentX * 0.06}deg)`;
+    const iy = $('iy' + card.dataset.idx), inn = $('in' + card.dataset.idx);
+    iy.style.opacity  = currentX > 30  ? Math.min((currentX - 30) / 80, 1) : 0;
+    inn.style.opacity = currentX < -30 ? Math.min((-currentX - 30) / 80, 1) : 0;
+  };
+  const end = () => {
+    if (!isDragging) return;
+    isDragging = false;
+    card.style.transition = '';
+    if (currentX > 80) swipeCard('right');
+    else if (currentX < -80) swipeCard('left');
+    else card.style.transform = '';
+  };
+
+  card.addEventListener('mousedown',  e => start(e.clientX));
+  window.addEventListener('mousemove', e => move(e.clientX));
+  window.addEventListener('mouseup',   end);
+  card.addEventListener('touchstart', e => start(e.touches[0].clientX), { passive: true });
+  window.addEventListener('touchmove', e => { if (isDragging) move(e.touches[0].clientX); }, { passive: true });
+  window.addEventListener('touchend',  end);
+}
+
+function swipeCard(dir) {
+  const card = document.querySelector('.recipe-card.front');
+  if (!card) return;
+  if (dir === 'right') liked.push(recipes[currentIdx]);
+  card.classList.add(dir === 'right' ? 'fly-right' : 'fly-left');
+  currentIdx++;
+
+  setTimeout(() => {
+    card.remove();
+    if (currentIdx >= recipes.length) {
+      $('swipe-area').style.display = 'none';
+      showDone();
+      return;
+    }
+    const cards = document.querySelectorAll('.recipe-card');
+    cards.forEach((c, i) => {
+      c.className = 'recipe-card ' + (['front','behind-1','behind-2'][i] || 'behind-2');
+    });
+    attachDrag();
+    updateCounter();
+  }, 400);
+}
+
+function updateCounter() {
+  $('counter').textContent = `${currentIdx + 1} von ${recipes.length}`;
+}
+
+function showDone() {
+  $('done-screen').style.display = 'flex';
+  $('done-subtitle').textContent = liked.length
+    ? `${liked.length} Rezept${liked.length > 1 ? 'e' : ''} gespeichert:`
+    : 'Kein Rezept gefallen? Lad ein neues Foto hoch!';
+  $('liked-list').innerHTML = liked.map(r => `
+    <div class="liked-card">
+      <div>
+        <div class="liked-card-title">${r.title}</div>
+        <div class="liked-card-meta">${r.category}</div>
+      </div>
+      <div class="liked-time-badge">${r.time} Min.</div>
+    </div>
+  `).join('');
+}
+
+function restart() {
+  recipes = []; currentIdx = 0; liked = []; imageBase64 = '';
+  $('done-screen').style.display = 'none';
+  $('preview-wrap').style.display = 'none';
+  $('drop-zone').style.display = 'block';
+  $('analyze-btn').style.display = 'none';
+  $('error-msg').style.display = 'none';
+  $('file-input').value = '';
+  $('upload-section').style.display = 'flex';
+}
+</script>
+</body>
+</html>
