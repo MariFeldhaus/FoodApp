@@ -40,7 +40,7 @@ module.exports = async function handler(req, res) {
       contentType: 'application/json',
       addRandomSuffix: false,
       allowOverwrite: true,
-      cacheControlMaxAge: 0,
+      cacheControlMaxAge: 60,
     });
 
     return res.status(200).json({ votes: data.votes });

@@ -26,7 +26,9 @@ module.exports = async function handler(req, res) {
 - Kein Weißmehl und generell glutenfrei (keine Weizen-, Roggen-, Gerste- oder Dinkelprodukte; stattdessen z.B. Vollkornreis, glutenfreier Hafer, Buchweizen, Mandelmehl, Reismehl, Kartoffeln, Hülsenfrüchte)
 - Kein zugesetzter Zucker (keine Süßigkeiten, kein Honig/Sirup in größeren Mengen; natürliche Süße durch Obst ist ok)
 - Kein rotes Fleisch und keine daraus hergestellten Wurstwaren (kein Rind, Schwein, Lamm, Kalb); Geflügel, Fisch, Meeresfrüchte, Eier und pflanzliche Proteine sind erlaubt
-Verwende NUR Zutaten, die diese Regeln erfüllen. Wenn eine genannte oder erkannte Zutat gegen diese Regeln verstößt, lasse sie weg oder ersetze sie durch eine geeignete Alternative.`;
+Verwende NUR Zutaten, die diese Regeln erfüllen. Wenn eine genannte oder erkannte Zutat gegen diese Regeln verstößt, lasse sie weg oder ersetze sie durch eine geeignete Alternative.
+
+Jedes Rezept muss außerdem eine gute Portion Protein (z.B. Geflügel, Fisch, Eier, Tofu, Hülsenfrüchte) UND eine ordentliche Portion Gemüse enthalten. Falls das Hauptgericht selbst kein oder zu wenig Gemüse hat, ergänze in den "steps" und "ingredients" eine einfache Beilage oder einen Salat, der dazu passt.`;
 
   const taskText = image
     ? `Analysiere dieses Bild und schlage genau 3 Rezepte vor, die mit den sichtbaren Zutaten zubereitet werden können.`

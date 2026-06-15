@@ -240,6 +240,7 @@
     text-align: center;
     display: none;
   }
+  #share-status.error { color: var(--red); }
 
   #results-list { display: flex; flex-direction: column; gap: 1.25rem; }
 
@@ -638,17 +639,29 @@ async function createSet() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ recipes })
     });
-    if (!res.ok) throw new Error();
-    const data = await res.json();
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.error || `Fehler ${res.status}`);
     currentSetId = data.id;
     history.replaceState(null, '', `${location.pathname}?set=${currentSetId}`);
   } catch (err) {
     currentSetId = null;
+    showStatus('Teilen/Bewerten ist gerade nicht verfügbar: ' + (err.message || 'Unbekannter Fehler'), true);
   }
 }
 
+function showStatus(text, isError) {
+  const status = $('share-status');
+  status.textContent = text;
+  status.classList.toggle('error', !!isError);
+  status.style.display = 'block';
+  if (!isError) setTimeout(() => { status.style.display = 'none'; }, 2000);
+}
+
 async function vote(idx, type) {
-  if (!currentSetId) return;
+  if (!currentSetId) {
+    showStatus('Bewerten geht erst, sobald das Set gespeichert ist (siehe Hinweis oben).', true);
+    return;
+  }
   const key = `vote_${currentSetId}_${idx}`;
   const prevVote = localStorage.getItem(key);
   const newVote = prevVote === type ? null : type;
@@ -659,20 +672,22 @@ async function vote(idx, type) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ id: currentSetId, recipeIndex: idx, prevVote, vote: newVote })
     });
-    if (!res.ok) throw new Error();
-    const data = await res.json();
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.error || `Fehler ${res.status}`);
     voteCounts = data.votes;
     if (newVote) localStorage.setItem(key, newVote); else localStorage.removeItem(key);
     renderResults();
   } catch (err) {
-    // Bewertung konnte nicht gespeichert werden, UI bleibt unverändert
+    showStatus('Bewertung konnte nicht gespeichert werden: ' + (err.message || 'Unbekannter Fehler'), true);
   }
 }
 
 async function shareSet() {
-  if (!currentSetId) return;
+  if (!currentSetId) {
+    showStatus('Teilen geht erst, sobald das Set gespeichert ist (siehe Hinweis oben).', true);
+    return;
+  }
   const url = `${location.origin}${location.pathname}?set=${currentSetId}`;
-  const status = $('share-status');
 
   if (navigator.share) {
     try {
@@ -682,9 +697,7 @@ async function shareSet() {
     }
   } else {
     await navigator.clipboard.writeText(url);
-    status.textContent = 'Link kopiert!';
-    status.style.display = 'block';
-    setTimeout(() => { status.style.display = 'none'; }, 2000);
+    showStatus('Link kopiert!', false);
   }
 }
 
@@ -731,8 +744,8 @@ function restart() {
 
   try {
     const res = await fetch(`/api/set?id=${encodeURIComponent(setId)}`);
-    if (!res.ok) throw new Error();
-    const data = await res.json();
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.error || `Fehler ${res.status}`);
     recipes = data.recipes;
     voteCounts = data.votes;
     currentSetId = setId;
@@ -740,6 +753,9 @@ function restart() {
     renderResults();
   } catch (err) {
     history.replaceState(null, '', location.pathname);
+    const em = $('error-msg');
+    em.textContent = 'Geteiltes Rezept-Set konnte nicht geladen werden: ' + (err.message || 'Unbekannter Fehler');
+    em.style.display = 'block';
   }
 })();
 </script>
