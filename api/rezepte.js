@@ -73,7 +73,7 @@ Verwende NUR Zutaten, die diese Regeln erfüllen. Wenn eine genannte oder erkann
 
 ${dietaryRules}
 
-Nutze die Websuche, um für jeden Vorschlag ein echtes, existierendes Rezept auf einer realen Rezeptseite zu finden, das zu den Zutaten, der Idee und den obigen Ernährungsregeln passt. Übernimm Zubereitungsschritte und Zutatenmengen möglichst aus diesem gefundenen Rezept.
+Nutze die Websuche, um für jeden Vorschlag ein echtes, existierendes Rezept auf einer realen Rezeptseite zu finden, das zu den Zutaten, der Idee und den obigen Ernährungsregeln passt. Halte dich SO NAH WIE MÖGLICH an dieses gefundene Originalrezept: Übernimm Zutatenliste, Mengenangaben und Zubereitungsschritte direkt und so wörtlich wie sinnvoll daraus, anstatt eigene Varianten zu erfinden. Passe nur an, was wegen der Ernährungsregeln zwingend ersetzt werden muss (z.B. eine glutenfreie Alternative statt Weizenmehl), und beschreibe diese Anpassung kurz in der "description".
 
 Antworte am Ende NUR mit einem JSON-Array ohne Markdown-Backticks oder Erklärungen:
 [
