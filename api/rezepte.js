@@ -11,15 +11,37 @@ module.exports = async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const { image, mimeType } = req.body;
+  const { image, mimeType, ingredients } = req.body;
 
-  if (!image) {
-    return res.status(400).json({ error: 'Kein Bild übergeben.' });
+  if (!image && !ingredients) {
+    return res.status(400).json({ error: 'Kein Bild und keine Zutaten übergeben.' });
   }
 
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) {
     return res.status(500).json({ error: 'API-Key fehlt auf dem Server.' });
+  }
+
+  const dietaryRules = `Wichtige Ernährungsregeln, die ALLE Rezepte zwingend einhalten müssen (entzündungsarme Ernährung):
+- Kein Weißmehl und generell glutenfrei (keine Weizen-, Roggen-, Gerste- oder Dinkelprodukte; stattdessen z.B. Vollkornreis, glutenfreier Hafer, Buchweizen, Mandelmehl, Reismehl, Kartoffeln, Hülsenfrüchte)
+- Kein zugesetzter Zucker (keine Süßigkeiten, kein Honig/Sirup in größeren Mengen; natürliche Süße durch Obst ist ok)
+- Kein rotes Fleisch und keine daraus hergestellten Wurstwaren (kein Rind, Schwein, Lamm, Kalb); Geflügel, Fisch, Meeresfrüchte, Eier und pflanzliche Proteine sind erlaubt
+Verwende NUR Zutaten, die diese Regeln erfüllen. Wenn eine genannte oder erkannte Zutat gegen diese Regeln verstößt, lasse sie weg oder ersetze sie durch eine geeignete Alternative.`;
+
+  const taskText = image
+    ? `Analysiere dieses Bild und schlage genau 3 Rezepte vor, die mit den sichtbaren Zutaten zubereitet werden können.`
+    : `Schlage genau 3 Rezepte vor, die mit folgenden vorhandenen Zutaten zubereitet werden können: ${ingredients}.`;
+
+  const content = [];
+  if (image) {
+    content.push({
+      type: 'image',
+      source: {
+        type: 'base64',
+        media_type: mimeType || 'image/jpeg',
+        data: image,
+      },
+    });
   }
 
   try {
@@ -44,19 +66,14 @@ module.exports = async function handler(req, res) {
           {
             role: 'user',
             content: [
-              {
-                type: 'image',
-                source: {
-                  type: 'base64',
-                  media_type: mimeType || 'image/jpeg',
-                  data: image,
-                },
-              },
+              ...content,
               {
                 type: 'text',
-                text: `Analysiere dieses Bild und schlage genau 3 Rezepte vor, die mit den sichtbaren Zutaten zubereitet werden können.
+                text: `${taskText}
 
-Nutze die Websuche, um für jeden Vorschlag ein echtes, existierendes Rezept auf einer realen Rezeptseite zu finden, das zu den Zutaten und der Idee passt. Übernimm Zubereitungsschritte und Zutatenmengen möglichst aus diesem gefundenen Rezept.
+${dietaryRules}
+
+Nutze die Websuche, um für jeden Vorschlag ein echtes, existierendes Rezept auf einer realen Rezeptseite zu finden, das zu den Zutaten, der Idee und den obigen Ernährungsregeln passt. Übernimm Zubereitungsschritte und Zutatenmengen möglichst aus diesem gefundenen Rezept.
 
 Antworte am Ende NUR mit einem JSON-Array ohne Markdown-Backticks oder Erklärungen:
 [
