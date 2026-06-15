@@ -96,9 +96,8 @@
 
   .tab-btn.active { background: var(--ink); color: var(--warm-white); }
 
-  #ingredients-input {
+  #ingredients-input, #notes-input {
     width: 100%;
-    min-height: 120px;
     padding: 1rem;
     border: 1.5px solid var(--border);
     border-radius: 16px;
@@ -108,8 +107,10 @@
     color: var(--ink);
     resize: vertical;
   }
-  #ingredients-input:focus { outline: none; border-color: var(--green); }
-  #ingredients-input::placeholder { color: var(--muted); font-weight: 300; }
+  #ingredients-input { min-height: 120px; }
+  #notes-input { min-height: 70px; margin-top: .5rem; }
+  #ingredients-input:focus, #notes-input:focus { outline: none; border-color: var(--green); }
+  #ingredients-input::placeholder, #notes-input::placeholder { color: var(--muted); font-weight: 300; }
 
   #drop-zone {
     border: 1.5px dashed var(--border);
@@ -467,6 +468,11 @@
       <textarea id="ingredients-input" placeholder="Welche Zutaten hast du da? z.B. Hühnchenbrust, Zucchini, Reis, Karotten, Ingwer …"></textarea>
     </div>
 
+    <div id="notes-wrap">
+      <div class="ing-label">Wünsche (optional)</div>
+      <textarea id="notes-input" placeholder="z.B. ich könnte noch einkaufen gehen, ich hätte gern etwas Frisches/einen Salat, oder ein bestimmtes Gericht …"></textarea>
+    </div>
+
     <div id="error-msg"></div>
     <button id="analyze-btn" onclick="analyze()">Rezepte vorschlagen</button>
   </div>
@@ -564,10 +570,12 @@ async function analyze() {
     $('loading-text').textContent = loadingSteps[++step % loadingSteps.length];
   }, 1800);
 
+  const notes = $('notes-input').value.trim();
+
   try {
     const body = activeTab === 'photo'
-      ? { image: imageBase64, mimeType: imageMime }
-      : { ingredients };
+      ? { image: imageBase64, mimeType: imageMime, notes }
+      : { ingredients, notes };
 
     const res = await fetch('/api/rezepte', {
       method: 'POST',
@@ -733,6 +741,7 @@ function restart() {
   $('error-msg').style.display = 'none';
   $('file-input').value = '';
   $('ingredients-input').value = '';
+  $('notes-input').value = '';
   history.replaceState(null, '', location.pathname);
   switchTab('photo');
   $('upload-section').style.display = 'flex';

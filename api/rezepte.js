@@ -11,7 +11,7 @@ module.exports = async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const { image, mimeType, ingredients } = req.body;
+  const { image, mimeType, ingredients, notes } = req.body;
 
   if (!image && !ingredients) {
     return res.status(400).json({ error: 'Kein Bild und keine Zutaten übergeben.' });
@@ -33,6 +33,10 @@ Jedes Rezept muss außerdem eine gute Portion Protein (z.B. Geflügel, Fisch, Ei
   const taskText = image
     ? `Analysiere dieses Bild und schlage genau 3 Rezepte vor, die mit den sichtbaren Zutaten zubereitet werden können.`
     : `Schlage genau 3 Rezepte vor, die mit folgenden vorhandenen Zutaten zubereitet werden können: ${ingredients}.`;
+
+  const notesText = notes && notes.trim()
+    ? `\n\nZusätzlicher Wunsch der Person (unbedingt berücksichtigen): "${notes.trim()}". Falls darin z.B. steht, dass noch eingekauft werden kann, dürfen die Rezepte auch Zutaten enthalten, die NICHT auf dem Bild/in der Liste sind. Falls ein bestimmtes Gericht oder eine Art von Gericht (z.B. "etwas Frisches", "ein Salat") gewünscht wird, sollte mindestens eines der 3 Rezepte das erfüllen.`
+    : '';
 
   const content = [];
   if (image) {
@@ -71,7 +75,7 @@ Jedes Rezept muss außerdem eine gute Portion Protein (z.B. Geflügel, Fisch, Ei
               ...content,
               {
                 type: 'text',
-                text: `${taskText}
+                text: `${taskText}${notesText}
 
 ${dietaryRules}
 
