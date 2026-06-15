@@ -212,44 +212,47 @@
 
   #loading p { font-size: 14px; color: var(--muted); font-weight: 300; }
 
-  /* ---- Swipe area ---- */
-  #swipe-area { display: none; flex-direction: column; gap: .75rem; }
+  /* ---- Results ---- */
+  #results-area { display: none; flex-direction: column; gap: 1.25rem; }
 
-  .swipe-hint {
-    display: flex;
-    justify-content: space-between;
+  #share-row { display: flex; gap: .75rem; }
+
+  #share-btn {
+    flex: 1;
+    padding: .85rem;
+    font-size: 15px;
+    font-weight: 500;
+    font-family: 'DM Sans', sans-serif;
+    border: none;
+    border-radius: 12px;
+    background: var(--ink);
+    color: var(--warm-white);
+    cursor: pointer;
+    transition: opacity .2s, transform .1s;
+    letter-spacing: .01em;
+  }
+  #share-btn:hover { opacity: .88; }
+  #share-btn:active { transform: scale(.98); }
+
+  #share-status {
     font-size: 12px;
-    color: var(--muted);
-    padding: 0 .25rem;
-    font-weight: 300;
+    color: var(--green);
+    text-align: center;
+    display: none;
   }
 
-  .card-stack {
-    position: relative;
-    height: 430px;
-  }
+  #results-list { display: flex; flex-direction: column; gap: 1.25rem; }
 
   .recipe-card {
-    position: absolute;
-    inset: 0;
     background: var(--warm-white);
     border: 1px solid var(--border);
     border-radius: 20px;
     padding: 1.75rem;
-    cursor: grab;
-    user-select: none;
     box-shadow: var(--card-shadow);
     display: flex;
     flex-direction: column;
     gap: .75rem;
-    will-change: transform;
   }
-  .recipe-card:active { cursor: grabbing; }
-  .recipe-card.behind-1 { transform: scale(.97) translateY(8px); z-index: 1; box-shadow: none; }
-  .recipe-card.behind-2 { transform: scale(.94) translateY(16px); z-index: 0; box-shadow: none; }
-  .recipe-card.front { z-index: 2; }
-  .recipe-card.fly-left  { transition: transform .38s ease, opacity .38s ease; transform: translateX(-130%) rotate(-16deg) !important; opacity: 0; pointer-events: none; }
-  .recipe-card.fly-right { transition: transform .38s ease, opacity .38s ease; transform: translateX(130%) rotate(16deg) !important; opacity: 0; pointer-events: none; }
 
   .card-header { display: flex; justify-content: space-between; align-items: flex-start; gap: .5rem; }
 
@@ -311,80 +314,32 @@
     font-weight: 300;
   }
 
-  .swipe-indicator {
-    position: absolute;
-    top: 1.5rem;
-    font-size: 12px;
-    font-weight: 500;
-    padding: 4px 12px;
-    border-radius: 20px;
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity .12s;
-    letter-spacing: .03em;
-  }
-  .ind-yes { left: 1.5rem; background: var(--green-light); color: var(--green); }
-  .ind-no  { right: 1.5rem; background: var(--red-light); color: var(--red); }
-
-  /* Action buttons */
-  .action-row {
+  /* ---- Voting ---- */
+  .vote-row {
     display: flex;
+    gap: .75rem;
+    margin-top: .25rem;
+  }
+
+  .vote-btn {
+    flex: 1;
+    display: flex;
+    align-items: center;
     justify-content: center;
-    align-items: center;
-    gap: 2rem;
-  }
-
-  .act-btn {
-    width: 60px; height: 60px;
-    border-radius: 50%;
-    border: 1px solid var(--border);
-    background: var(--warm-white);
-    cursor: pointer;
-    display: flex; align-items: center; justify-content: center;
-    transition: background .15s, transform .1s, border-color .15s;
-    box-shadow: var(--card-shadow);
-  }
-  .act-btn:hover { background: var(--cream); border-color: var(--ink); }
-  .act-btn:active { transform: scale(.9); }
-
-  #counter {
-    text-align: center;
-    font-size: 12px;
-    color: var(--muted);
-    font-weight: 300;
-    letter-spacing: .05em;
-  }
-
-  /* ---- Done screen ---- */
-  #done-screen { display: none; flex-direction: column; gap: 1rem; }
-
-  #done-screen h2 {
-    font-family: 'Playfair Display', serif;
-    font-size: 26px;
-    font-weight: 400;
-  }
-  #done-screen h2 em { font-style: italic; color: var(--green); }
-
-  #done-screen p { font-size: 14px; color: var(--muted); font-weight: 300; }
-
-  .liked-card {
-    background: var(--warm-white);
-    border: 1px solid var(--border);
+    gap: 6px;
+    padding: .6rem;
     border-radius: 12px;
-    padding: 1rem 1.25rem;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: .5rem;
+    border: 1px solid var(--border);
+    background: var(--cream);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--ink);
+    cursor: pointer;
+    transition: background .15s, border-color .15s, color .15s;
   }
-  .liked-card-title { font-size: 15px; font-weight: 500; }
-  .liked-card-meta { font-size: 12px; color: var(--muted); margin-top: 2px; font-weight: 300; }
-  .liked-time-badge {
-    font-size: 12px;
-    color: var(--muted);
-    flex-shrink: 0;
-    font-weight: 300;
-  }
+  .vote-btn.heart.active { background: var(--green-light); border-color: var(--green); color: var(--green); }
+  .vote-btn.x.active { background: var(--red-light); border-color: var(--red); color: var(--red); }
 
   #restart-btn {
     padding: .75rem;
@@ -474,7 +429,7 @@
 
 <header>
   <h1>Was koche ich <em>heute?</em></h1>
-  <p>Foto machen · Rezepte entdecken · Swipen</p>
+  <p>Foto machen · Rezepte entdecken · Teilen &amp; bewerten</p>
 </header>
 
 <div id="main">
@@ -521,26 +476,14 @@
     <p id="loading-text">Zutaten werden erkannt…</p>
   </div>
 
-  <!-- Swipe -->
-  <div id="swipe-area">
-    <div class="swipe-hint">
-      <span>← überspringen</span>
-      <span>speichern →</span>
+  <!-- Results -->
+  <div id="results-area">
+    <div id="share-row">
+      <button id="share-btn" onclick="shareSet()">Rezepte teilen</button>
     </div>
-    <div class="card-stack" id="card-stack"></div>
-    <div class="action-row">
-      <button class="act-btn" onclick="swipeCard('left')" title="Überspringen">
-        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-          <path d="M5 5L15 15M15 5L5 15" stroke="#C0392B" stroke-width="1.6" stroke-linecap="round"/>
-        </svg>
-      </button>
-      <button class="act-btn" onclick="swipeCard('right')" title="Speichern">
-        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-          <path d="M10 17C10 17 2.5 12 2.5 6.5C2.5 4.29 4.29 2.5 6.5 2.5C7.97 2.5 9.25 3.26 10 4.42C10.75 3.26 12.03 2.5 13.5 2.5C15.71 2.5 17.5 4.29 17.5 6.5C17.5 12 10 17 10 17Z" stroke="#2D6A4F" stroke-width="1.6" stroke-linejoin="round"/>
-        </svg>
-      </button>
-    </div>
-    <p id="counter"></p>
+    <p id="share-status"></p>
+    <div id="results-list"></div>
+    <button id="restart-btn" onclick="restart()">Neue Zutaten / neues Foto</button>
   </div>
 
   <!-- Recipe detail -->
@@ -557,21 +500,12 @@
     </div>
   </div>
 
-  <!-- Done -->
-  <div id="done-screen">
-    <h2>Guten <em>Appetit!</em></h2>
-    <p id="done-subtitle"></p>
-    <div id="liked-list"></div>
-    <button id="restart-btn" onclick="restart()">Nochmal von vorne</button>
-  </div>
-
 </div>
 
 <script>
-let recipes = [], currentIdx = 0, liked = [];
+let recipes = [], voteCounts = [], currentSetId = null;
 let imageBase64 = '', imageMime = 'image/jpeg';
 let activeTab = 'photo';
-let isDragging = false, startX = 0, currentX = 0;
 
 const $ = id => document.getElementById(id);
 
@@ -645,9 +579,8 @@ async function analyze() {
 
     recipes = await res.json();
     $('loading').style.display = 'none';
-    renderCards();
-    $('swipe-area').style.display = 'flex';
-    updateCounter();
+    await createSet();
+    renderResults();
 
   } catch (err) {
     clearInterval(interval);
@@ -659,25 +592,20 @@ async function analyze() {
   }
 }
 
-function renderCards() {
-  const stack = $('card-stack');
-  stack.innerHTML = '';
-  for (let i = Math.min(currentIdx + 2, recipes.length - 1); i >= currentIdx; i--) {
-    const card = makeCard(recipes[i], i);
-    const offset = i - currentIdx;
-    card.classList.add(offset === 0 ? 'front' : offset === 1 ? 'behind-1' : 'behind-2');
-    stack.appendChild(card);
-  }
-  attachDrag();
+function renderResults() {
+  const list = $('results-list');
+  list.innerHTML = '';
+  recipes.forEach((r, idx) => list.appendChild(makeCard(r, idx)));
+  $('results-area').style.display = 'flex';
 }
 
 function makeCard(r, idx) {
   const d = document.createElement('div');
   d.className = 'recipe-card';
   d.dataset.idx = idx;
+  const counts = voteCounts[idx] || { heart: 0, x: 0 };
+  const myVote = getMyVote(idx);
   d.innerHTML = `
-    <div class="swipe-indicator ind-yes" id="iy${idx}">Speichern</div>
-    <div class="swipe-indicator ind-no"  id="in${idx}">Weiter</div>
     <div class="card-header">
       <span class="card-tag">${r.category}</span>
       <span class="card-time">
@@ -689,9 +617,75 @@ function makeCard(r, idx) {
     <div class="card-desc">${r.description}</div>
     <div class="ing-label">Zutaten</div>
     <div class="ingredients">${r.ingredients.map(i => `<span class="ing">${i}</span>`).join('')}</div>
-    <button class="recipe-link-btn" onclick="event.stopPropagation(); showRecipe(${idx})">Zubereitung ansehen</button>
+    <button class="recipe-link-btn" onclick="showRecipe(${idx})">Zubereitung ansehen</button>
+    <div class="vote-row">
+      <button class="vote-btn heart ${myVote === 'heart' ? 'active' : ''}" onclick="vote(${idx}, 'heart')">❤️ <span>${counts.heart}</span></button>
+      <button class="vote-btn x ${myVote === 'x' ? 'active' : ''}" onclick="vote(${idx}, 'x')">❌ <span>${counts.x}</span></button>
+    </div>
   `;
   return d;
+}
+
+function getMyVote(idx) {
+  return currentSetId ? localStorage.getItem(`vote_${currentSetId}_${idx}`) : null;
+}
+
+async function createSet() {
+  voteCounts = recipes.map(() => ({ heart: 0, x: 0 }));
+  try {
+    const res = await fetch('/api/share', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ recipes })
+    });
+    if (!res.ok) throw new Error();
+    const data = await res.json();
+    currentSetId = data.id;
+    history.replaceState(null, '', `${location.pathname}?set=${currentSetId}`);
+  } catch (err) {
+    currentSetId = null;
+  }
+}
+
+async function vote(idx, type) {
+  if (!currentSetId) return;
+  const key = `vote_${currentSetId}_${idx}`;
+  const prevVote = localStorage.getItem(key);
+  const newVote = prevVote === type ? null : type;
+
+  try {
+    const res = await fetch('/api/vote', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id: currentSetId, recipeIndex: idx, prevVote, vote: newVote })
+    });
+    if (!res.ok) throw new Error();
+    const data = await res.json();
+    voteCounts = data.votes;
+    if (newVote) localStorage.setItem(key, newVote); else localStorage.removeItem(key);
+    renderResults();
+  } catch (err) {
+    // Bewertung konnte nicht gespeichert werden, UI bleibt unverändert
+  }
+}
+
+async function shareSet() {
+  if (!currentSetId) return;
+  const url = `${location.origin}${location.pathname}?set=${currentSetId}`;
+  const status = $('share-status');
+
+  if (navigator.share) {
+    try {
+      await navigator.share({ title: 'Rezeptvorschläge', text: 'Schau dir diese Rezeptvorschläge an und bewerte sie!', url });
+    } catch (err) {
+      // Teilen abgebrochen, nichts zu tun
+    }
+  } else {
+    await navigator.clipboard.writeText(url);
+    status.textContent = 'Link kopiert!';
+    status.style.display = 'block';
+    setTimeout(() => { status.style.display = 'none'; }, 2000);
+  }
 }
 
 function showRecipe(idx) {
@@ -717,91 +711,37 @@ function closeRecipe() {
   $('recipe-modal').style.display = 'none';
 }
 
-function attachDrag() {
-  const card = document.querySelector('.recipe-card.front');
-  if (!card) return;
-
-  const start = x => { isDragging = true; startX = x; currentX = 0; card.style.transition = 'none'; };
-  const move = x => {
-    if (!isDragging) return;
-    currentX = x - startX;
-    card.style.transform = `translateX(${currentX}px) rotate(${currentX * 0.06}deg)`;
-    const iy = $('iy' + card.dataset.idx), inn = $('in' + card.dataset.idx);
-    iy.style.opacity  = currentX > 30  ? Math.min((currentX - 30) / 80, 1) : 0;
-    inn.style.opacity = currentX < -30 ? Math.min((-currentX - 30) / 80, 1) : 0;
-  };
-  const end = () => {
-    if (!isDragging) return;
-    isDragging = false;
-    card.style.transition = '';
-    if (currentX > 80) swipeCard('right');
-    else if (currentX < -80) swipeCard('left');
-    else card.style.transform = '';
-  };
-
-  card.addEventListener('mousedown',  e => start(e.clientX));
-  window.addEventListener('mousemove', e => move(e.clientX));
-  window.addEventListener('mouseup',   end);
-  card.addEventListener('touchstart', e => start(e.touches[0].clientX), { passive: true });
-  window.addEventListener('touchmove', e => { if (isDragging) move(e.touches[0].clientX); }, { passive: true });
-  window.addEventListener('touchend',  end);
-}
-
-function swipeCard(dir) {
-  const card = document.querySelector('.recipe-card.front');
-  if (!card) return;
-  if (dir === 'right') liked.push(recipes[currentIdx]);
-  card.classList.add(dir === 'right' ? 'fly-right' : 'fly-left');
-  currentIdx++;
-
-  setTimeout(() => {
-    card.remove();
-    if (currentIdx >= recipes.length) {
-      $('swipe-area').style.display = 'none';
-      showDone();
-      return;
-    }
-    const cards = document.querySelectorAll('.recipe-card');
-    cards.forEach((c, i) => {
-      c.className = 'recipe-card ' + (['front','behind-1','behind-2'][i] || 'behind-2');
-    });
-    attachDrag();
-    updateCounter();
-  }, 400);
-}
-
-function updateCounter() {
-  $('counter').textContent = `${currentIdx + 1} von ${recipes.length}`;
-}
-
-function showDone() {
-  $('done-screen').style.display = 'flex';
-  $('done-subtitle').textContent = liked.length
-    ? `${liked.length} Rezept${liked.length > 1 ? 'e' : ''} gespeichert:`
-    : 'Kein Rezept gefallen? Lad ein neues Foto hoch!';
-  $('liked-list').innerHTML = liked.map((r, i) => `
-    <div class="liked-card">
-      <div>
-        <div class="liked-card-title">${r.title}</div>
-        <div class="liked-card-meta">${r.category} · ${r.time} Min.</div>
-      </div>
-      <button class="recipe-link-btn" onclick="showRecipe(recipes.indexOf(liked[${i}]))">Zubereitung</button>
-    </div>
-  `).join('');
-}
-
 function restart() {
-  recipes = []; currentIdx = 0; liked = []; imageBase64 = '';
-  $('done-screen').style.display = 'none';
+  recipes = []; voteCounts = []; currentSetId = null; imageBase64 = '';
+  $('results-area').style.display = 'none';
   $('preview-wrap').style.display = 'none';
   $('drop-zone').style.display = 'block';
   $('analyze-btn').style.display = 'none';
   $('error-msg').style.display = 'none';
   $('file-input').value = '';
   $('ingredients-input').value = '';
+  history.replaceState(null, '', location.pathname);
   switchTab('photo');
   $('upload-section').style.display = 'flex';
 }
+
+(async function init() {
+  const setId = new URLSearchParams(location.search).get('set');
+  if (!setId) return;
+
+  try {
+    const res = await fetch(`/api/set?id=${encodeURIComponent(setId)}`);
+    if (!res.ok) throw new Error();
+    const data = await res.json();
+    recipes = data.recipes;
+    voteCounts = data.votes;
+    currentSetId = setId;
+    $('upload-section').style.display = 'none';
+    renderResults();
+  } catch (err) {
+    history.replaceState(null, '', location.pathname);
+  }
+})();
 </script>
 </body>
 </html>
