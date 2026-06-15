@@ -359,6 +359,75 @@
     margin-top: .5rem;
   }
   #restart-btn:hover { background: var(--warm-white); }
+
+  /* ---- Recipe detail ---- */
+  .recipe-link-btn {
+    align-self: flex-start;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--green);
+    background: var(--green-light);
+    border: none;
+    border-radius: 20px;
+    padding: 5px 12px;
+    cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+  }
+
+  #recipe-modal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(26,24,20,.45);
+    z-index: 10;
+    align-items: flex-end;
+    justify-content: center;
+  }
+
+  #recipe-modal-content {
+    width: 100%;
+    max-width: 440px;
+    max-height: 80vh;
+    overflow-y: auto;
+    background: var(--warm-white);
+    border-radius: 20px 20px 0 0;
+    padding: 1.75rem;
+    display: flex;
+    flex-direction: column;
+    gap: .75rem;
+  }
+
+  #recipe-modal-close {
+    align-self: flex-end;
+    border: 1px solid var(--border);
+    background: transparent;
+    border-radius: 20px;
+    padding: 5px 14px;
+    font-size: 12px;
+    font-family: 'DM Sans', sans-serif;
+    color: var(--ink);
+    cursor: pointer;
+  }
+
+  .steps-label {
+    font-size: 10px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: .1em;
+    color: var(--muted);
+    margin-top: .5rem;
+  }
+
+  #recipe-modal-steps {
+    padding-left: 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: .5rem;
+    font-size: 13.5px;
+    line-height: 1.55;
+    color: #4A4744;
+    font-weight: 300;
+  }
 </style>
 </head>
 <body>
@@ -423,6 +492,20 @@
     <p id="counter"></p>
   </div>
 
+  <!-- Recipe detail -->
+  <div id="recipe-modal">
+    <div id="recipe-modal-content">
+      <button id="recipe-modal-close" onclick="closeRecipe()">Schließen</button>
+      <div class="card-title" id="recipe-modal-title"></div>
+      <div class="card-desc" id="recipe-modal-desc"></div>
+      <div class="ing-label">Zutaten</div>
+      <div class="ingredients" id="recipe-modal-ingredients"></div>
+      <div class="steps-label">Zubereitung</div>
+      <ol id="recipe-modal-steps"></ol>
+      <a id="recipe-modal-source" class="recipe-link-btn" target="_blank" rel="noopener noreferrer" style="display:none; text-decoration:none;"></a>
+    </div>
+  </div>
+
   <!-- Done -->
   <div id="done-screen">
     <h2>Guten <em>Appetit!</em></h2>
@@ -459,7 +542,8 @@ $('file-input').addEventListener('change', e => {
 const loadingSteps = [
   'Zutaten werden erkannt…',
   'Rezeptideen werden entwickelt…',
-  'Zubereitung wird geplant…'
+  'Echte Rezepte werden im Web gesucht…',
+  'Zubereitung wird zusammengestellt…'
 ];
 
 async function analyze() {
@@ -528,8 +612,32 @@ function makeCard(r, idx) {
     <div class="card-desc">${r.description}</div>
     <div class="ing-label">Zutaten</div>
     <div class="ingredients">${r.ingredients.map(i => `<span class="ing">${i}</span>`).join('')}</div>
+    <button class="recipe-link-btn" onclick="event.stopPropagation(); showRecipe(${idx})">Zubereitung ansehen</button>
   `;
   return d;
+}
+
+function showRecipe(idx) {
+  const r = recipes[idx];
+  $('recipe-modal-title').textContent = r.title;
+  $('recipe-modal-desc').textContent = r.description;
+  $('recipe-modal-ingredients').innerHTML = r.ingredients.map(i => `<span class="ing">${i}</span>`).join('');
+  $('recipe-modal-steps').innerHTML = (r.steps || []).map(s => `<li>${s}</li>`).join('');
+
+  const source = $('recipe-modal-source');
+  if (r.sourceUrl) {
+    source.href = r.sourceUrl;
+    source.textContent = 'Original-Rezept ansehen' + (r.sourceName ? ` (${r.sourceName})` : '');
+    source.style.display = 'inline-block';
+  } else {
+    source.style.display = 'none';
+  }
+
+  $('recipe-modal').style.display = 'flex';
+}
+
+function closeRecipe() {
+  $('recipe-modal').style.display = 'none';
 }
 
 function attachDrag() {
@@ -594,13 +702,13 @@ function showDone() {
   $('done-subtitle').textContent = liked.length
     ? `${liked.length} Rezept${liked.length > 1 ? 'e' : ''} gespeichert:`
     : 'Kein Rezept gefallen? Lad ein neues Foto hoch!';
-  $('liked-list').innerHTML = liked.map(r => `
+  $('liked-list').innerHTML = liked.map((r, i) => `
     <div class="liked-card">
       <div>
         <div class="liked-card-title">${r.title}</div>
-        <div class="liked-card-meta">${r.category}</div>
+        <div class="liked-card-meta">${r.category} · ${r.time} Min.</div>
       </div>
-      <div class="liked-time-badge">${r.time} Min.</div>
+      <button class="recipe-link-btn" onclick="showRecipe(recipes.indexOf(liked[${i}]))">Zubereitung</button>
     </div>
   `).join('');
 }

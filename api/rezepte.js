@@ -32,7 +32,14 @@ module.exports = async function handler(req, res) {
       },
       body: JSON.stringify({
         model: 'claude-haiku-4-5-20251001',
-        max_tokens: 1024,
+        max_tokens: 4096,
+        tools: [
+          {
+            type: 'web_search_20250305',
+            name: 'web_search',
+            max_uses: 3,
+          },
+        ],
         messages: [
           {
             role: 'user',
@@ -49,16 +56,23 @@ module.exports = async function handler(req, res) {
                 type: 'text',
                 text: `Analysiere dieses Bild und schlage genau 3 Rezepte vor, die mit den sichtbaren Zutaten zubereitet werden können.
 
-Antworte NUR mit einem JSON-Array ohne Markdown-Backticks oder Erklärungen:
+Nutze die Websuche, um für jeden Vorschlag ein echtes, existierendes Rezept auf einer realen Rezeptseite zu finden, das zu den Zutaten und der Idee passt. Übernimm Zubereitungsschritte und Zutatenmengen möglichst aus diesem gefundenen Rezept.
+
+Antworte am Ende NUR mit einem JSON-Array ohne Markdown-Backticks oder Erklärungen:
 [
   {
     "title": "Rezeptname",
     "category": "Kategorie (z.B. Pasta, Salat, Suppe, Pfanne, Auflauf)",
     "time": 25,
     "description": "2-3 ansprechende Sätze über das Gericht, seinen Geschmack und was es besonders macht.",
-    "ingredients": ["Zutat 1", "Zutat 2", "Zutat 3", "Zutat 4", "Zutat 5"]
+    "ingredients": ["Zutat 1 mit Menge", "Zutat 2 mit Menge", "Zutat 3 mit Menge", "Zutat 4 mit Menge", "Zutat 5 mit Menge"],
+    "steps": ["Schritt 1: konkrete Zubereitungsanweisung", "Schritt 2: ...", "Schritt 3: ..."],
+    "sourceUrl": "https://... (Link zum gefundenen Originalrezept)",
+    "sourceName": "Name der Webseite (z.B. Chefkoch, EAT SMARTER)"
   }
-]`,
+]
+
+Die "steps" müssen eine vollständige, konkrete Zubereitungsanleitung sein (mindestens 4-6 Schritte mit Mengen, Temperaturen und Zeitangaben), kein bloßer Fließtext über das Gericht. Wenn du für ein Rezept kein passendes Original findest, setze "sourceUrl" und "sourceName" auf null.`,
               },
             ],
           },
@@ -78,7 +92,12 @@ Antworte NUR mit einem JSON-Array ohne Markdown-Backticks oder Erklärungen:
       .join('');
 
     const clean = text.replace(/```json|```/g, '').trim();
-    const recipes = JSON.parse(clean);
+    const start = clean.indexOf('[');
+    const end = clean.lastIndexOf(']');
+    if (start === -1 || end === -1) {
+      throw new Error('Keine gültige Rezeptliste in der Antwort gefunden.');
+    }
+    const recipes = JSON.parse(clean.slice(start, end + 1));
 
     return res.status(200).json(recipes);
   } catch (err) {
